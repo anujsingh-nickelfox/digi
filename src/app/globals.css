@@ -1,0 +1,162 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-bg: #000000;
+  --color-surface: #0D0D0D;
+  --color-card: #111111;
+  --color-border: #1F1F1F;
+  --color-white: #FFFFFF;
+  --color-off-white: #F0F0F0;
+  --color-muted: #888888;
+  --color-accent: #FFFFFF;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-white);
+  font-family: var(--font-body);
+  overflow-x: hidden;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+}
+
+.font-mono {
+  font-family: var(--font-mono);
+}
+
+/* Custom Utilities */
+.glass-nav {
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.hero-h1 {
+  @apply text-7xl lg:text-9xl font-black tracking-tighter leading-[0.9];
+}
+
+.section-h2 {
+  @apply text-4xl lg:text-6xl font-bold tracking-tight;
+}
+
+.card-title {
+  @apply text-xl lg:text-2xl font-semibold;
+}
+
+.body-text {
+  @apply text-base lg:text-lg font-medium text-muted;
+}
+
+.label-tag {
+  @apply text-xs font-mono uppercase tracking-widest text-gray-500;
+}
+
+/* Service Card Glow Effect */
+.service-card {
+  @apply border border-border bg-surface p-10 relative overflow-hidden transition-colors duration-300;
+}
+
+.service-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.04), transparent 70%);
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+
+.service-card:hover {
+  border-color: #FFFFFF;
+}
+
+.service-card:hover::before {
+  opacity: 1;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-muted);
+}
+
+/* Spotlight Background Styles */
+.spotlight-container {
+  @apply relative w-full h-full overflow-hidden bg-black;
+}
+
+.spotlight-overlay {
+  @apply absolute inset-0 pointer-events-none;
+}
+
+.spotlight {
+  @apply absolute rounded-full blur-[100px] opacity-20 bg-white;
+}
+
+.spotlight-left {
+  @apply w-[40vw] h-[40vw] -left-[10%] -top-[10%];
+}
+
+.spotlight-mid {
+  @apply w-[50vw] h-[50vw] left-1/4 top-[10%];
+}
+
+.spotlight-right {
+  @apply w-[35vw] h-[35vw] -right-[5%] bottom-[10%];
+}
+
+.spotlight-content {
+  @apply relative z-10 w-full h-full;
+}
+
+/* GSAP Animations Utility */
+.reveal {
+  opacity: 0;
+}
+
+/* Noise/Grain Effect */
+.noise {
+  position: fixed;
+  top: -50%;
+  left: -50%;
+  right: -50%;
+  bottom: -50%;
+  width: 200%;
+  height: 200vh;
+  background: transparent url('http://assets.iceable.com/img/noise-transparent.png') repeat 0 0;
+  background-repeat: repeat;
+  animation: noise-animation .2s infinite;
+  opacity: .05;
+  visibility: visible;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+@keyframes noise-animation {
+  0% { transform: translate(0, 0); }
+  10% { transform: translate(-2%, -3%); }
+  20% { transform: translate(-4%, 2%); }
+  30% { transform: translate(2%, -4%); }
+  40% { transform: translate(-2%, 5%); }
+  50% { transform: translate(-4%, 2%); }
+  60% { transform: translate(3%, 0); }
+  70% { transform: translate(0, 3%); }
+  80% { transform: translate(-3%, 0); }
+  90% { transform: translate(2%, 2%); }
+  100% { transform: translate(1%, 0); }
+}
