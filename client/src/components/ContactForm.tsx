@@ -27,8 +27,10 @@ const ContactForm = () => {
     e.preventDefault();
     setStatus({ loading: true, success: false, error: null });
 
+    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
     try {
-      const res = await axios.post('http://localhost:5000/api/contact', formData);
+      const res = await axios.post(`${API_URL}/api/contact`, formData);
       if (res.data.success) {
         setStatus({ loading: false, success: true, error: null });
         setFormData({ name: '', email: '', phone: '', course: '', message: '' });
