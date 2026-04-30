@@ -18,6 +18,7 @@ app.use(
     origin: [
       "http://localhost:5173", // Vite default
       "http://localhost:3000", // Alternative local port
+      "https://digi-edu.vercel.app"
     ],
     methods: ["GET", "POST"],
     credentials: true,
