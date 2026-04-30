@@ -1,38 +1,18 @@
 const express = require("express");
 const mongoose = require("mongoose");
-const cors = require("cors");
 const dotenv = require("dotenv");
 
-// Load Environment Variables
 dotenv.config();
 
 const app = express();
 
-// ✅ CORS must be FIRST — before everything else
-const corsOptions = {
-  origin: function (origin, callback) {
-    const allowedOrigins = [
-      "http://localhost:5173",
-      "https://digi-edu.vercel.app",
-    ];
-    // Allow Postman / curl / server-to-server (no origin header)
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error("Blocked by CORS: " + origin));
-    }
-  },
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true,
-};
+// ✅ Step 1 — Import chrome-headers.js
+const chromeHeaders = require("./chrome-headers");
 
-app.use(cors(corsOptions));
+// ✅ Step 2 — Use it as FIRST middleware (before everything)
+app.use(chromeHeaders);
 
-// ✅ Preflight handler with SAME corsOptions (not blank cors())
-app.options("*", cors(corsOptions));
-
-// ✅ Body parsers AFTER cors
+// Body parsers
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -45,37 +25,26 @@ app.get("/api/health", (req, res) => {
   res.json({ status: "OK", time: new Date().toISOString() });
 });
 
-// Global Error Handling Middleware
+// Global Error Handler
 app.use((err, req, res, next) => {
-  console.error("❌ Global Error Handler:", err.stack);
-  res.status(500).json({
-    success: false,
-    message: "An internal server error occurred.",
-  });
+  console.error("❌ Error:", err.stack);
+  res.status(500).json({ success: false, message: "Internal server error." });
 });
 
-// MongoDB Connection
-const MONGO_URI =
-  process.env.MONGO_URI || "mongodb://127.0.0.1:27017/edulearn";
+// MongoDB + Server
+const MONGO_URI = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/edulearn";
 
 mongoose
   .connect(MONGO_URI)
   .then(() => {
-    console.log("✅  MongoDB connected →", MONGO_URI);
-    console.log(
-      "💡  Data visible in MongoDB Compass @ mongodb://127.0.0.1:27017"
-    );
-
+    console.log("✅ MongoDB connected →", MONGO_URI);
     const PORT = process.env.PORT || 5000;
     app.listen(PORT, () => {
-      console.log(`🚀  Server running at http://localhost:${PORT}`);
-      console.log(
-        `📬  Contact API ready at http://localhost:${PORT}/api/contact`
-      );
+      console.log(`🚀 Server running at http://localhost:${PORT}`);
+      console.log(`📬 Contact API → http://localhost:${PORT}/api/contact`);
     });
   })
   .catch((err) => {
-    console.error("❌  MongoDB connection failed:", err.message);
-    console.log("⚠️   Make sure MongoDB is running locally!");
+    console.error("❌ MongoDB failed:", err.message);
     process.exit(1);
   });
