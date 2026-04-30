@@ -40,11 +40,9 @@ const ContactForm = () => {
   setStatus({ loading: true, success: false, error: null });
  
   
-
-  const API_URL = window.location.hostname === 'localhost' 
-    ? 'http://localhost:5000' 
-    : 'https://digi-edu.vercel.app'; // <--- Yahan apna Backend Deploy link daalein
-
+  // ✅ Correct code
+  const API_URL = import.meta.env.VITE_API_URL || 'https://digi-edu-backend.onrender.com';
+  
   try {
     const res = await axios.post(`${API_URL}/api/contact`, formData);
     if (res.data.success) {
