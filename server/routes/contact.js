@@ -1,100 +1,74 @@
-const router = require('express').Router();
-const Lead = require('../models/Lead');
-const transporter = require('../config/mailer');
+const express = require('express');
+const router = express.Router();
+const Contact = require('../models/Contact'); // Model ko link kiya
+const nodemailer = require('nodemailer');
+// ... existing imports ...
 
-router.post('/contact', async (req, res) => {
-  const { name, email, phone, course, message } = req.body;
-
-  // Basic validation
-  if (!name || !email || !phone || !course) {
-    return res.status(400).json({ 
-      success: false, 
-      message: 'Please provide all required fields: name, email, phone, and course.' 
-    });
-  }
-
+router.post('/', async (req, res) => {
   try {
-    // Run MongoDB save and Email sending in parallel
-    const results = await Promise.allSettled([
-      // ACTION 1: Save to MongoDB
-      (async () => {
-        const newLead = new Lead({ name, email, phone, course, message });
-        return await newLead.save();
-      })(),
+    const { name, email, phone, course, message } = req.body;
+    const newContact = new Contact(req.body);
+    await newContact.save();
 
-      // ACTION 2: Send email to admin
-      transporter.sendMail({
-        from: `"Digi-Learners Bot" <${process.env.EMAIL_USER}>`,
-        to: process.env.ADMIN_EMAIL,
-        subject: `New Enquiry: ${course} from ${name}`,
-        html: `
-          <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 10px; overflow: hidden;">
-            <div style="background-color: #2ECC71; color: white; padding: 20px; text-align: center;">
-              <h2 style="margin: 0;">New Student Enquiry</h2>
-              <p style="margin: 5px 0 0;">Digi-Learners Ed-Tech</p>
-            </div>
-            <div style="padding: 20px; line-height: 1.6; color: #333;">
-              <table style="width: 100%; border-collapse: collapse;">
-                <tr>
-                  <td style="padding: 10px; border-bottom: 1px solid #eee; font-weight: bold; width: 30%;">Name:</td>
-                  <td style="padding: 10px; border-bottom: 1px solid #eee;">${name}</td>
-                </tr>
-                <tr>
-                  <td style="padding: 10px; border-bottom: 1px solid #eee; font-weight: bold;">Email:</td>
-                  <td style="padding: 10px; border-bottom: 1px solid #eee;">${email}</td>
-                </tr>
-                <tr>
-                  <td style="padding: 10px; border-bottom: 1px solid #eee; font-weight: bold;">Phone:</td>
-                  <td style="padding: 10px; border-bottom: 1px solid #eee;">${phone}</td>
-                </tr>
-                <tr>
-                  <td style="padding: 10px; border-bottom: 1px solid #eee; font-weight: bold;">Course:</td>
-                  <td style="padding: 10px; border-bottom: 1px solid #eee;">${course}</td>
-                </tr>
-                <tr>
-                  <td style="padding: 10px; border-bottom: 1px solid #eee; font-weight: bold;">Message:</td>
-                  <td style="padding: 10px; border-bottom: 1px solid #eee;">${message || 'N/A'}</td>
-                </tr>
-                <tr>
-                  <td style="padding: 10px; font-weight: bold;">Submitted At:</td>
-                  <td style="padding: 10px;">${new Date().toLocaleString('en-IN')}</td>
-                </tr>
-              </table>
-            </div>
-            <div style="background-color: #f8f9fa; color: #777; padding: 15px; text-align: center; font-size: 12px;">
-              This is an automated enquiry from your website Digi-Learners.
-            </div>
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.ADMIN_EMAIL,
+        pass: process.env.ADMIN_EMAIL_PASS
+      }
+    });
+
+    // 2nd Image wala Professional HTML Design
+    const htmlContent = `
+      <div style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
+        <div style="max-width: 600px; margin: auto; background: #1a1a1a; border-radius: 8px; overflow: hidden; color: #ffffff;">
+          <div style="background-color: #1e4b7a; padding: 20px; text-align: left;">
+            <h2 style="margin: 0; font-size: 20px;">New Contact Form Submission</h2>
+            <p style="margin: 5px 0 0; font-size: 14px; color: #a0c4ff;">Received from your educational website</p>
           </div>
-        `
-      })
-    ]);
+          <div style="padding: 20px;">
+            <table style="width: 100%; border-collapse: collapse; color: #ffffff;">
+              <tr style="border-bottom: 1px solid #333;">
+                <td style="padding: 15px 0; color: #888; width: 30%;">Name</td>
+                <td style="padding: 15px 0;">${name}</td>
+              </tr>
+              <tr style="border-bottom: 1px solid #333;">
+                <td style="padding: 15px 0; color: #888;">Email</td>
+                <td style="padding: 15px 0; color: #a0c4ff;">${email}</td>
+              </tr>
+              <tr style="border-bottom: 1px solid #333;">
+                <td style="padding: 15px 0; color: #888;">Phone</td>
+                <td style="padding: 15px 0;">${phone}</td>
+              </tr>
+              <tr style="border-bottom: 1px solid #333;">
+                <td style="padding: 15px 0; color: #888;">Course</td>
+                <td style="padding: 15px 0; color: #a0c4ff;">${course}</td>
+              </tr>
+              <tr>
+                <td style="padding: 15px 0; color: #888; vertical-align: top;">Message</td>
+                <td style="padding: 15px 0; line-height: 1.5;">${message}</td>
+              </tr>
+            </table>
+          </div>
+          <div style="background: #222; padding: 10px 20px; text-align: center; font-size: 12px; color: #666;">
+            Submitted on ${new Date().toLocaleString('en-IN')}
+          </div>
+        </div>
+      </div>
+    `;
 
-    // Check if at least the database save was successful
-    const dbResult = results[0];
-    const emailResult = results[1];
-
-    if (dbResult.status === 'rejected') {
-      console.error('Database Error:', dbResult.reason);
-      throw new Error('Failed to save enquiry to database');
-    }
-
-    if (emailResult.status === 'rejected') {
-      console.warn('Email Warning:', emailResult.reason);
-      // We still return success if DB save worked, but maybe log the email failure
-    }
-
-    res.json({ 
-      success: true, 
-      message: 'Enquiry submitted successfully! Our team will contact you soon.' 
+    await transporter.sendMail({
+      from: `"EduLearn Contact Form" <${process.env.ADMIN_EMAIL}>`,
+      to: process.env.ADMIN_EMAIL,
+      subject: `New Enquiry from ${name} — ${course}`,
+      html: htmlContent // Yahan HTML use kar rahe hain design ke liye
     });
 
-  } catch (err) {
-    console.error('Server Error:', err);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Internal server error. Please try again later.' 
-    });
+    res.status(200).json({ success: true, message: 'Enquiry sent!' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Minimum 10 characters required' });
   }
 });
+
 
 module.exports = router;
