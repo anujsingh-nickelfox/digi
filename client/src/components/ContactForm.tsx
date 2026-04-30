@@ -23,28 +23,41 @@ const ContactForm = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // Character limit check ke liye frontend par hi validation laga dete hain
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setStatus({ loading: true, success: false, error: null });
+  e.preventDefault();
+  
+  // 10 characters check (Reverted)
+  if (formData.message.length < 10) {
+    setStatus({ 
+      loading: false, 
+      success: false, 
+      error: 'Message must be at least 10 characters long.' 
+    });
+    return;
+  }
 
-    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+  setStatus({ loading: true, success: false, error: null });
+ 
+  
 
-    try {
-      const res = await axios.post(`${API_URL}/api/contact`, formData);
-      if (res.data.success) {
-        setStatus({ loading: false, success: true, error: null });
-        setFormData({ name: '', email: '', phone: '', course: '', message: '' });
-        setTimeout(() => setStatus(prev => ({ ...prev, success: false })), 5000);
-      }
-    } catch (err: any) {
-      console.error(err);
-      setStatus({ 
-        loading: false, 
-        success: false, 
-        error: err.response?.data?.message || 'Something went wrong. Please try again later.' 
-      });
+  const API_URL = window.location.hostname === 'localhost' 
+    ? 'http://localhost:5000' 
+    : 'https://digi-edu.vercel.app'; // <--- Yahan apna Backend Deploy link daalein
+
+  try {
+    const res = await axios.post(`${API_URL}/api/contact`, formData);
+    if (res.data.success) {
+      setStatus({ loading: false, success: true, error: null });
+      setFormData({ name: '', email: '', phone: '', course: '', message: '' });
     }
-  };
+  } catch (err: any) {
+    // UI/UX Update: Boring error ki jagah specific error dikhayenge
+    const errorMessage = err.response?.data?.message || 'Minimum 10 characters required';
+    setStatus({ loading: false, success: false, error: errorMessage });
+  }
+};
+  
 
   return (
     <section id="contact" className="bg-black py-32 min-h-screen flex items-center">
