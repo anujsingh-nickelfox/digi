@@ -17,13 +17,14 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173", // Vite default
-      "http://localhost:3000", // Alternative local port
       "https://digi-edu.vercel.app"
     ],
-    methods: ["GET", "POST"],
+    methods: ["GET", "POST", "OPTIONS"], // OPTIONS zaroori hai
     credentials: true,
   })
 );
+
+app.options('*', cors());
 
 // Routes
 const contactRoutes = require('./routes/contact');
@@ -64,14 +65,3 @@ mongoose
     process.exit(1);
   });
 
-const cors = require('cors');
-
-app.use(cors({
-  origin: "https://digi-edu.vercel.app", // Exact live frontend URL
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // OPTIONS zaroori hai preflight ke liye
-  credentials: true,
-  allowedHeaders: ["Content-Type", "Authorization"]
-}));
-
-// OPTIONS requests ko manually handle karein (Preflight fix)
-app.options('*', cors());
