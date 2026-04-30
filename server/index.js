@@ -16,14 +16,15 @@ app.use(express.urlencoded({ extended: true }));
 app.use(
   cors({
     origin: [
-      "http://localhost:5173", // Vite default
+      "http://localhost:5173", 
       "https://digi-edu.vercel.app"
     ],
-    methods: ["GET", "POST", "OPTIONS"], // OPTIONS zaroori hai
+    methods: ["GET", "POST", "OPTIONS"], // OPTIONS yahan hona zaroori hai
     credentials: true,
   })
 );
 
+// Ye line Line 27 par add karein
 app.options('*', cors());
 
 // Routes
