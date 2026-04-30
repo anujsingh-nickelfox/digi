@@ -19,7 +19,7 @@ app.use(
       "http://localhost:5173", 
       "https://digi-edu.vercel.app"
     ],
-    methods: ["GET", "POST", "OPTIONS"], // OPTIONS yahan hona zaroori hai
+    methods: ["GET", "POST", "OPTIONS"], 
     credentials: true,
   })
 );
